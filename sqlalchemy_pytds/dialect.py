@@ -135,6 +135,10 @@ class MSDialect_pytds(PyTDSConnector, MSDialect):
         super(MSDialect_pytds, self).__init__(**params)
         self.use_scope_identity = True
         self.server_side_cursors = server_side_cursors
+        if 'paramstyle' in params:
+            self._paramstyle = params['paramstyle']
+        else:
+            self._paramstyle = 'pyformat'
 
     def set_isolation_level(self, connection, level):
         if level == 'AUTOCOMMIT':
@@ -143,3 +147,8 @@ class MSDialect_pytds(PyTDSConnector, MSDialect):
             connection.autocommit(False)
             super(MSDialect_pytds, self).set_isolation_level(connection,
                                                                level)
+
+    def connect(self, *cargs, **cparams):
+        conn = super(MSDialect_pytds, self).connect(*cargs, **cparams)
+        conn.paramstyle = self._paramstyle
+        return conn
